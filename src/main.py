@@ -497,7 +497,7 @@ def delete_favorite_character(user_id, character_id):
         }
         return jsonify(response_body), 400
     else :
-        character_fav = Favorites(user_id=user_id).filter_by(id_character=character_id).first()
+        character_fav = Favorites.query.filter_by(user_id=user_id).filter_by(id_character=character_id).first()
         db.session.delete(character_fav)
         db.session.commit()
         response_body = {
