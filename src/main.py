@@ -203,8 +203,9 @@ def create_planet():
     return jsonify(response_body), 400
 
 ###########################
-# character POST query
+# Character POST query
 ###########################
+
 
 @app.route('/character', methods=['POST'])
 def create_character():
@@ -235,54 +236,122 @@ def create_character():
     # Ends the function by sending the error code 400 (data already exists)
     return jsonify(response_body), 400
 
-###########################
-# Favorites POST query
-###########################
-@app.route('/favorites', methods=['POST'])
-def create_favorites():
-    # Load data from postman or input
-    body = json.loads(request.data)
-    print(body)
 
-    user_query = User.query.filter_by(id=body["user_id"]).first()
-    planet_query = Planet.query.filter_by(id=body["id_planet"]).first()
-    character_query = Character.query.filter_by(id=body["id_character"]).first()
+################################
+# Favorite character POST query
+###############################
 
-    print(user_query)
-    print(planet_query)
-    print(character_query)
-    
-    if user_query:
+@app.route('/favorites/character/<int:user_id>/<int:char_id>', methods=['POST'])
+def create_favorite_character(user_id, char_id):
+
+    fav_user_char = Favorites.query.filter_by(user_id=user_id).first()
+    fav_char_id = Favorites.query.filter_by(id_character=char_id).first()
+
+    if fav_user_char and fav_char_id:
         response_body = {
-            "msg": "User exists"
+            "msg": "This character exists in that user favorites list"
         }
-
-    elif user_query is None:
-        new_favorites = Favorites(
-        user_id=body["user_id"],
-        id_planet=body["id_planet"],
-        id_character=body["id_character"])
-        # Flask command to add a new entry
-        db.session.add(new_favorites)
-        # Flask command to commit the database, saving the changes
+        return jsonify(response_body), 400
+    else :
+        new_planet_fav = Favorites(user_id=user_id, id_character=char_id)
+        db.session.add(new_planet_fav)
         db.session.commit()
-        # Standard response to request with error code 200 (success)
         response_body = {
-            "msg": "New favorite list created"
-        }
-        return jsonify(response_body), 200
+        "msg": "New character added to user list"
+    }
+    # Ends the function by sending the error code 400 (data already exists)
+    return jsonify(response_body), 200
 
-    # elif user_query and not planet_query or not character_query:
-    #     response_body = {
-    #         "msg": "Planet or character doesn't exist"
-    #     }
-    #     return jsonify(response_body), 400
 
     response_body = {
-        "msg": "Error"
+        "msg": "character already exists"
     }
     # Ends the function by sending the error code 400 (data already exists)
     return jsonify(response_body), 400
+
+
+# ###########################
+# # Favorite planet POST query
+# ###########################
+
+@app.route('/favorites/planet/<int:user_id>/<int:planet_id>', methods=['POST'])
+def create_favorite_planet(user_id, planet_id):
+
+    fav_user_planet = Favorites.query.filter_by(user_id=user_id).first()
+    fav_planet_id = Favorites.query.filter_by(id_planet=planet_id).first()
+
+    if fav_user_planet and fav_planet_id:
+        response_body = {
+            "msg": "This planet exists in that user favorites list"
+        }
+        return jsonify(response_body), 400
+    else :
+        new_planet_fav = Favorites(user_id=user_id, id_planet=planet_id)
+        db.session.add(new_planet_fav)
+        db.session.commit()
+        response_body = {
+        "msg": "New planet added to user list"
+    }
+    # Ends the function by sending the error code 400 (data already exists)
+    return jsonify(response_body), 200
+
+
+    response_body = {
+        "msg": "planet already exists"
+    }
+    # Ends the function by sending the error code 400 (data already exists)
+    return jsonify(response_body), 400
+
+
+# ###########################
+# NO FUNCIONA, NO SE PIDE
+# # Favorites POST query
+# ###########################
+# @app.route('/favorites', methods=['POST'])
+# def create_favorites():
+#     # Load data from postman or input
+#     body = json.loads(request.data)
+#     print(body)
+
+#     user_query = User.query.filter_by(id=body["user_id"]).first()
+#     planet_query = Planet.query.filter_by(id=body["id_planet"]).first()
+#     character_query = Character.query.filter_by(id=body["id_character"]).first()
+
+#     print(user_query)
+#     print(planet_query)
+#     print(character_query)
+    
+#     if user_query:
+#         response_body = {
+#             "msg": "User exists"
+#         }
+
+#     elif user_query is None:
+#         new_favorites = Favorites(
+#         user_id=body["user_id"],
+#         id_planet=body["id_planet"],
+#         id_character=body["id_character"])
+#         # Flask command to add a new entry
+#         db.session.add(new_favorites)
+#         # Flask command to commit the database, saving the changes
+#         db.session.commit()
+#         # Standard response to request with error code 200 (success)
+#         response_body = {
+#             "msg": "New favorite list created"
+#         }
+#         return jsonify(response_body), 200
+
+#     # elif user_query and not planet_query or not character_query:
+#     #     response_body = {
+#     #         "msg": "Planet or character doesn't exist"
+#     #     }
+#     #     return jsonify(response_body), 400
+
+#     response_body = {
+#         "msg": "Error"
+#     }
+#     # Ends the function by sending the error code 400 (data already exists)
+#     return jsonify(response_body), 400
     
 
 ###########################
@@ -355,7 +424,7 @@ def delete_character(character_id):
 
 
 ###########################
-# Favorite DELETE query
+# Favorite DELETE all query
 ###########################
 
 @app.route('/favorites/<int:favorite_id>', methods=["DELETE"])
@@ -377,6 +446,72 @@ def delete_favorite(favorite_id):
         "msg": "Favorite deleted successfully"
         }
     return jsonify(response_body), 200
+
+
+# ###########################
+# # Favorite planet DELETE query
+# ###########################
+
+@app.route('/favorites/planet/<int:user_id>/<int:planet_id>', methods=['DELETE'])
+def delete_favorite_planet(user_id, planet_id):
+
+    fav_user_planet = Favorites.query.filter_by(user_id=user_id).first()
+    fav_planet_id = Favorites.query.filter_by(id_planet=planet_id).first()
+
+    if fav_user_planet is None and fav_planet_id is None:
+        response_body = {
+            "msg": "Planet or user not found"
+        }
+        return jsonify(response_body), 400
+    else :
+        planet_fav = Favorites.query.filter_by(user_id=user_id).filter_by(id_planet=planet_id).first()
+        db.session.delete(planet_fav)
+        db.session.commit()
+        response_body = {
+        "msg": "Planet deleted from user list"
+    }
+    # Ends the function by sending the error code 400 (data already exists)
+    return jsonify(response_body), 200
+
+
+    response_body = {
+        "msg": "Error"
+    }
+    # Ends the function by sending the error code 400 (data already exists)
+    return jsonify(response_body), 400
+
+
+ # ###########################
+# # Favorite character DELETE query
+# ###########################
+
+@app.route('/favorites/character/<int:user_id>/<int:character_id>', methods=['DELETE'])
+def delete_favorite_character(user_id, character_id):
+
+    fav_user_character = Favorites.query.filter_by(user_id=user_id).first()
+    fav_character_id = Favorites.query.filter_by(id_character=character_id).first()
+
+    if fav_user_character is None and fav_character_id is None:
+        response_body = {
+            "msg": "character or user not found"
+        }
+        return jsonify(response_body), 400
+    else :
+        character_fav = Favorites(user_id=user_id).filter_by(id_character=character_id).first()
+        db.session.delete(character_fav)
+        db.session.commit()
+        response_body = {
+        "msg": "character deleted from user list"
+    }
+    # Ends the function by sending the error code 400 (data already exists)
+    return jsonify(response_body), 200
+
+
+    response_body = {
+        "msg": "Error"
+    }
+    # Ends the function by sending the error code 400 (data already exists)
+    return jsonify(response_body), 400
 
 
 # this only runs if `$ python src/main.py` is executed
